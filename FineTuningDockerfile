@@ -1,0 +1,17 @@
+# Use the official Python 3.11 image as base
+FROM python:3.11
+
+# Set the working directory inside the container
+WORKDIR /fine-tuning
+
+# Copy project files into the container
+COPY ./fine-tuning /fine-tuning
+
+# Install dependencies (if you have a requirements.txt file)
+RUN apt-get update && apt-get install -y build-essential && \
+    git clone https://github.com/axolotl-ai-cloud/axolotl.git && \
+    cd axolotl && \
+    pip3 install --no-build-isolation axolotl[flash-attn,deepspeed]
+
+# Define the command to run the script
+#CMD ["python", "main.py"]
