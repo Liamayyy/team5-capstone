@@ -1,15 +1,12 @@
 base_model: google/gemma-2-2b
-# optionally might have model_type or tokenizer_type
 model_type: AutoModelForCausalLM
 tokenizer_type: AutoTokenizer
-# Automatically upload checkpoint and final model to HF
-# hub_model_id: username/custom_model_name
+is_llama_derived_model: true
 
 load_in_8bit: false
-load_in_4bit: true
+load_in_4bit: false
 strict: false
 
-# huggingface repo
 chat_template: gemma
 datasets:
   - path: /home/liam23/team5-capstone/data/medQuad_BioASQ_prompt_response_chat.jsonl
@@ -20,15 +17,8 @@ datasets:
       content: value
     drop_system_message: true
 
-
 val_set_size: 0.0
-output_dir: ./outputs/out
-
-adapter: qlora
-lora_r: 32
-lora_alpha: 16
-lora_dropout: 0.05
-lora_target_linear: true
+output_dir: ./outputs/full-fine-tuned
 
 sequence_len: 2048
 sample_packing: true
@@ -41,10 +31,9 @@ wandb_watch:
 wandb_name:
 wandb_log_model:
 
-
 gradient_accumulation_steps: 4
 micro_batch_size: 1
-num_epochs: 4
+num_epochs: 2
 optimizer: adamw_bnb_8bit
 lr_scheduler: cosine
 learning_rate: 0.0002
@@ -70,7 +59,7 @@ eval_max_new_tokens: 128
 saves_per_epoch: 1
 debug:
 deepspeed:
-weight_decay: 0.0
+weight_decay: 0.01
 fsdp:
 fsdp_config:
 special_tokens:
