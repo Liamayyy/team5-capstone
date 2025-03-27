@@ -22,7 +22,7 @@ datasets:
 
 
 val_set_size: 0.0
-output_dir: ./outputs/out
+output_dir: /home/liam23/team5-capstone/fine-tuning/outputs/full-fine-tuned
 
 adapter: qlora
 lora_r: 32

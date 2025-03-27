@@ -142,7 +142,8 @@ Make sure you are inside the main axolotl repository or this will not work.
 ```
 pip3 install torch &&
 pip3 install -U packaging setuptools wheel &&
-pip3 install --no-build-isolation -e '.[flash-attn,deepspeed]'
+pip3 install --no-build-isolation -e '.[flash-attn,deepspeed]' &&
+conda install jupyter -y
 ```
 ## Hugging Face CLI
 After installing axolotl, you will have to create a HuggingFace account if you have not already, gain access to the repository of the model that you want to use, and create an acces token for your account. When creating the access token make sure to have the option "Read access to contents of all public gated repos you can access" enabled. Afer completing these steps, you will be able to log in to HuggingFace using the following command:
@@ -169,6 +170,16 @@ I run the first fine-tuning example I have made with:
 axolotl train /home/<pid>/team5-capstone/fine-tuning/medQuad_BioASQ_qlora.yml
 ```
 For any information pertaining to the actual parameters and use of axolotl, see: https://github.com/axolotl-ai-cloud/axolotl
+
+## Using Jupyter on the Compute Cluster (Incomplete):
+First, run these commands (in the background):
+```
+jupyter notebook --no-browser --port=8899
+ssh -N -L 8888:localhost:8888 liam23@tinkercliffs2.arc.vt.edu &
+```
+```
+kill %2 && kill %1
+```
 
 # Hard Reset:
 To reset everything you have done on ARC (for the most part), you can run the following commands:
