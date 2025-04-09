@@ -2,3 +2,5 @@ fine-tuning/axolotl
 fine-tuning/last_run_prepared
 fine-tuning/outputs
 fine-tuning/fine-tuned-models
+data/medical-fine-tune
+data/original-medical-data
