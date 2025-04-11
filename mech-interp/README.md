@@ -32,7 +32,7 @@ source activate mech-interp
 ## Install SAE Lens
 Make sure you are inside the main axolotl repository or this will not work.
 ```
-pip3 install git+https://github.com/jbloomAus/SAELens.git
-pip3 install torch transformers
+pip3 install git+https://github.com/jbloomAus/SAELens.git &&
+pip3 install torch transformers &&
 conda install jupyter -y
 ```

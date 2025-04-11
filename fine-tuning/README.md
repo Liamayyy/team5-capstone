@@ -54,3 +54,7 @@ I run the first fine-tuning example I have made with:
 axolotl train /home/<pid>/team5-capstone/fine-tuning/medQuad_BioASQ_qlora.yml
 ```
 For any information pertaining to the actual parameters and use of axolotl, see: https://github.com/axolotl-ai-cloud/axolotl
+
+# Our Models:
+- https://huggingface.co/Liamayyy/gemma-2-2b-medical-v2/tree/main
+- https://huggingface.co/Liamayyy/gemma-2-2b-medical-v1

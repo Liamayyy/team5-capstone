@@ -3,7 +3,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from sae_lens import SparseAutoencoder, load_pretrained_sae
 
 # Load your fine-tuned Gemma-2-2B model
-model_name = "your-username/your-gemma-2-2b-model"
+model_name = "Liamayyy/your-gemma-2-2b-model"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 

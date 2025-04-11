@@ -80,7 +80,13 @@ This will give you guidance on what you can do with each one.
 
 When I figure out how to run batch jobs, I will place a guide here for them.
 
-# Cluster Setup:
+# Repository Information:
+This repository consists of three major folders: `data`, `fine-tuning`, and `mech-interp`
+- `data`: Contains the datasets for both fine-tuning and mechanistic interpratability analyses. Additionally includes the analysis of these datasets as well as the output data from any mechanistic interpratabiliyt methods.
+- `fine-tuning`: Contains all fine-tuning materials and the links to models that we have created. The fine-tuned models themselves are hosted on public repositories on huggingface.
+- `mech-interp`: This is where most of our code is. This is where all of our mechanistic interpatability materials can be found. This inlcudes everything we need to run the mechanistic interpratability jobs, bt again, the actual outputs will be stored in the data folder.
+
+# ARC Cluster Setup:
 
 Here we will outline a few general steps for setting up the cluster.
 
