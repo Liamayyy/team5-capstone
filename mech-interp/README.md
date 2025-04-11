@@ -1,4 +1,8 @@
 # Login Node Installation Requirements
+
+These steps can be done either on the login node or the cluster node.
+
+## Setup Mech-Interp Miniconda Enviroment:
 First we will create a conda enviroment to run our code in:
 ```
 module reset &&
@@ -15,8 +19,6 @@ python -m ipykernel install --user --name=mech-interp --display-name "Mechanisti
 
 Here, we will outline the installation requirements for our code once you have joined a compute cluster with GPU access.
 
-TODO: DETERMINE IF GPU NECESSARY FOR SAE LENS
-
 ## Module Reset:
 Resets the modules loaded by previous users, and adds back Miniconda for our use:
 ```
@@ -27,7 +29,7 @@ module load Miniconda3 &&
 source activate mech-interp
 ```
 
-## Instaall Axolotl
+## Install SAE Lens
 Make sure you are inside the main axolotl repository or this will not work.
 ```
 pip3 install git+https://github.com/jbloomAus/SAELens.git

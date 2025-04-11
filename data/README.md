@@ -19,19 +19,27 @@ Note: To access the dataset, please unzip the folder provided in the git repo:
 ```
 unzip medical-fine-tune.zip
 ```
-This will output a `medical-fine-tune` folder, which git will ignore. This folder contains the original data (slightly restructured) as well as the final combined data.
+This will output a `medical-fine-tune` folder, which git will ignore. This folder only contains the final combined data.
 
 # Dataset Combination Instructions:
 If you wish to combine and clean the original data yourself, it is also provided in a subfolder. The script we used to combine these different data sources is `combine.py` and should work to recreate the dataset provided in the `medical-fine-tune` folder.
 
-To run this script, simply `cd` into the `data` folder of this repo and run:
+To recreate our dataset, first, `cd` into the `data` folder and then unzip `original-medical-data.zip`:
+```
+unzip original-medical-data.zip
+```
+This will output a `original-medical-data.zip` folder, which git will ignore. This folder contains the original datasets that we used, with a slightly different directory structure then the original dataset. However, the content of the data files is exactly the same.
+
+Then, you can run the `combine.py` file by doing:
 ```
 pip install pandas
 ```
-and then
+And then:
 ```
 python combine.py
 ```
 
 # Dataset Analysis:
 You can find our limited analysis of this dataset in the notebook: `analysis.ipynb`
+
+TODO: Update this analysis for the new code

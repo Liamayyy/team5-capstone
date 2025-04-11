@@ -1,6 +1,5 @@
 Note: Some commands may need you to subsititute specific information into them (e.i. pid)
 
-
 # Accessing Tinkercliffs on ARC Cluster via SSH
 
 ## Virtual Private Network (VPN) Requirements
@@ -30,7 +29,6 @@ cat <path_to_key.pub>
 Note, this path is usually `/home/<pid>/.ssh/id_ed25519.pub`
 
 After this, you will copy the contents of this key that are displayed by `cat` and paste them into a new SSH key in git.
-
 
 # ARC Login Cluster Guide:
 
@@ -82,40 +80,16 @@ This will give you guidance on what you can do with each one.
 
 When I figure out how to run batch jobs, I will place a guide here for them.
 
-# Login Node Installation Requirements:
+# Cluster Setup:
 
-Here we will outline the installation requirements for our code once you have logged into the login node. This can be done either in the login node or within a cluster node.
+Here we will outline a few general steps for setting up the cluster.
 
 ## Install Jupyter Extension for VSCode:
 
 Make sure to install the necessary VSCode Jupyter extension so that you will have access to a Jupyter kernel to run your code on.
 
-## Setup Fine-Tuning Miniconda Enviroment:
-This will load the Miniconda3 module from ARC, create the `fine-tuning` enviroment, and add a ipykernel so that we can run Jupyter noetbooks in this conda enviroment. This is in addition to adding .local/bin to the user's PATH variable, which is necessary for accessing binaries installed by pip.
-```
-module reset &&
-export PATH=$PATH:/home/<pid>/.local/bin &&
-source ~/.bashrc &&
-module load Miniconda3 &&
-conda create -n fine-tuning python=3.11 &&
-source activate fine-tuning &&
-conda install ipykernel jupyter &&
-python -m ipykernel install --user --name=fine-tuning --display-name "Fine-Tuning Enviroment (fine-tuning)"
-```
-You should be able to run a Jupyter Notebook on our newly created Conda enviroment, but if you cannot select it, please complete the following steps:
-1. Open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P on macOS).​
-2. Type and select Python: Select Interpreter.​
-3. Choose Fine-Tuning Enviroment (fine-tuning) from the list. 
-4. If it does not appear on the list, click on Enter interpreter path, select Find, and navigate to the `~/.conda/envs/fine-tuning/bin/python`,  your Conda environment.
-
-
-To eventually remove any conda enviroment, you can do the following:
-
-```
-conda env remove --name fine-tuning (or another enviroment name)
-```
-
 ## Clone Repositories:
+You will have to clone a few different repositories in different locations in order to run our code and ensure everything fits together nicely in your enviroment. Running this from your home directory will ensure that this repositories are installed in the right place.
 ```
 git clone https://github.com/Liamayyy/team5-capstone.git &&
 cd team5-capstone &&
@@ -123,67 +97,44 @@ cd fine-tuning &&
 git clone https://github.com/axolotl-ai-cloud/axolotl.git
 ```
 
-# Cluster Node Installation Requirements
-
-Here, we will outline the installation requirements for our code once you have joined a compute cluster with GPU access.
-
-## Module Reset:
-Resets the modules loaded by previous users, and adds back Miniconda for our use:
-```
-module reset &&
-export PATH=$PATH:/home/<pid>/.local/bin &&
-source ~/.bashrc &&
-module load Miniconda3 &&
-source activate fine-tuning
-```
-
-## Install Axolotl
-Make sure you are inside the main axolotl repository or this will not work.
-```
-pip3 install torch &&
-pip3 install -U packaging setuptools wheel &&
-pip3 install --no-build-isolation -e '.[flash-attn,deepspeed]' &&
-conda install jupyter -y
-```
 ## Hugging Face CLI
-After installing axolotl, you will have to create a HuggingFace account if you have not already, gain access to the repository of the model that you want to use, and create an acces token for your account. When creating the access token make sure to have the option "Read access to contents of all public gated repos you can access" enabled. Afer completing these steps, you will be able to log in to HuggingFace using the following command:
+For much of the code in this repository, you will have to create a HuggingFace account if you have not already. Once you have an account, you can request access to gated repositories and create access tokens. When creating the access token for the fine-tuning or mech-interp step make sure to have the option "Read access to contents of all public gated repos you can access" enabled. Make sure to save you token in a secure location for future use, as for each session that you use huggingface, you will have to log in to their cli. After completing these steps, you will be able to log in to HuggingFace using the following command:
 ```
 huggingface-cli login
 ```
 It will prompt you for your access token, and after entering it, you should be able to use axolotl to access gated models like gemma-2-2b.
 
-Note: When prompted if you want to add the token as a git credential, I select yes.
+Note: When prompted if you want to add the token as a git credential, I select no, as this may complicate things later down the line.
 
-## Using Axolotl
-To get started, you can run this example to make sure everything is runnning correctly.
-```
-axolotl train /home/<pid>/team5-capstone/fine-tuning/axolotl/examples/gemma2/qlora.yml
-```
-Once this is working, most of what you will have to change in order to fine-tune will be the actual .yaml file itself.
+## Using Jupyter on the Compute Cluster (Not Finished Yet):
+I personally like running the code on a normal python file to avoid uncessary complications, however, if you would like to use a notebook, you can with the following instructions:
 
-The general structure for usfine-tuning with any .yaml files is:
-```
-axolotl train path/to/file.yaml
-```
-I run the first fine-tuning example I have made with:
-```
-axolotl train /home/<pid>/team5-capstone/fine-tuning/medQuad_BioASQ_qlora.yml
-```
-For any information pertaining to the actual parameters and use of axolotl, see: https://github.com/axolotl-ai-cloud/axolotl
+First, make sure to install the necessary VSCode Jupyter extension so that you will have access to a Jupyter kernel to run your code on.
 
-## Using Jupyter on the Compute Cluster (Incomplete):
-First, run these commands (in the background):
+You should be able to run a Jupyter Notebook on our newly created Conda enviroment, but if you cannot select it, please complete the following steps:
+1. Open the Command Palette (Ctrl+Shift+P or Cmd+Shift+P on macOS).​
+2. Type and select Python: Select Interpreter.​
+3. Choose Fine-Tuning Enviroment (fine-tuning) from the list. 
+4. If it does not appear on the list, click on Enter interpreter path, select Find, and navigate to the `~/.conda/envs/fine-tuning/bin/python`,  your Conda environment.
+
+Then, run these commands (in the background):
 ```
 jupyter notebook --no-browser --port=8899
-ssh -N -L 8888:localhost:8888 liam23@tinkercliffs2.arc.vt.edu &
+ssh -N -L 8888:localhost:8888 <pid>@tinkercliffs2.arc.vt.edu &
 ```
 ```
 kill %2 && kill %1
 ```
 
-# Hard Reset:
+## Hard Reset:
 To reset everything you have done on ARC (for the most part), you can run the following commands:
 ```
 conda env remove --name fine-tuning
 rm -rf .cache/ .local/ team5-capstone/ .ipython/ .dotnet/ .conda/ .jupyter/ .lesshst/ .triton/ .nv/
+```
+
+Reminder: to eventually remove any conda enviroment, you can do the following:
+
+```
+conda env remove --name fine-tuning (or another enviroment name)
 ```
