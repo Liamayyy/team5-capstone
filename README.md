@@ -137,7 +137,7 @@ module load Miniconda3 &&
 source activate fine-tuning
 ```
 
-## Instaall Axolotl
+## Install Axolotl
 Make sure you are inside the main axolotl repository or this will not work.
 ```
 pip3 install torch &&
