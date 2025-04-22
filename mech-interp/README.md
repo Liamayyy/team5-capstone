@@ -28,11 +28,10 @@ source ~/.bashrc &&
 module load Miniconda3 &&
 source activate mech-interp
 ```
+NOTE: If you exit a GPU session and want to pull up the conda enviroment in a new GPU session, you usually only have to run this code again (as opposed to deleting the old enviroment and creating a new one). Doing this for new jobs will save lots of development time.
 
 ## Install SAE Lens
-Make sure you are inside the main axolotl repository or this will not work.
 ```
-pip3 install git+https://github.com/jbloomAus/SAELens.git &&
-pip3 install torch transformers &&
+pip3 install sae-lens transformer_lens torch transformers datasets tqdm &&
 conda install jupyter -y
 ```

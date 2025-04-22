@@ -30,6 +30,8 @@ source ~/.bashrc &&
 module load Miniconda3 &&
 source activate fine-tuning
 ```
+NOTE: If you exit a GPU session and want to pull up the conda enviroment in a new GPU session, you usually only have to run this code again (as opposed to deleting the old enviroment and creating a new one). Doing this for new jobs will save lots of development time.
+
 ## Install Axolotl
 Make sure you are inside the main axolotl repository or this will not work.
 ```
@@ -56,5 +58,5 @@ axolotl train /home/<pid>/team5-capstone/fine-tuning/medQuad_BioASQ_qlora.yml
 For any information pertaining to the actual parameters and use of axolotl, see: https://github.com/axolotl-ai-cloud/axolotl
 
 # Our Models:
-- https://huggingface.co/Liamayyy/gemma-2-2b-medical-v2/tree/main
+- https://huggingface.co/Liamayyy/gemma-2-2b-medical-v2
 - https://huggingface.co/Liamayyy/gemma-2-2b-medical-v1
