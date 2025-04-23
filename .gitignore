@@ -4,5 +4,8 @@ fine-tuning/outputs
 fine-tuning/fine-tuned-models
 data/medical-fine-tune
 data/original-medical-data
-mech-interp/activations
-mech-interp/sparse_codes
+mech-interp/single-layer-anaylsis/activations
+mech-interp/single-layer-anaylsis/sparse_codes
+mech-interp/multi-layer-anaylsis/activations
+mech-interp/multi-layer-anaylsis/sparse_codes
+

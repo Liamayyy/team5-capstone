@@ -1,10 +1,17 @@
 # generate_activations.py
 import os
+import argparse
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
+# Parse layer argument
+parser = argparse.ArgumentParser()
+parser.add_argument("--layer", type=int, required=True, help="Layer index to extract activations from.")
+args = parser.parse_args()
+layer_idx = args.layer
 
 # Directories
 activations_dir = "activations"
@@ -20,18 +27,13 @@ finetuned_model = AutoModelForCausalLM.from_pretrained(finetuned_model_path, tor
 base_model.eval()
 finetuned_model.eval()
 
-# Load only a small shard (1/1000th) of the dataset to avoid full download or processing
-dataset = load_dataset("wikitext", "wikitext-103-v1", split="train[:1000]")
-
+# Dataset
+dataset = load_dataset("wikitext", "wikitext-103-v1", split="train[:50]")
 def tokenize_function(examples):
-    return tokenizer(examples["text"], return_tensors="pt", padding="max_length", truncation=True, max_length=128)
-
+    return tokenizer(examples["text"], return_tensors="pt", padding="max_length", truncation=True, max_length=512)
 tokenized_dataset = dataset.map(tokenize_function, batched=True)
 tokenized_dataset.set_format(type="torch", columns=["input_ids", "attention_mask"])
-train_dataset = tokenized_dataset
-
-# DataLoader
-dataloader = DataLoader(train_dataset, batch_size=8)
+dataloader = DataLoader(tokenized_dataset, batch_size=8)
 
 # Hook
 def make_hook(activation_list):
@@ -44,7 +46,7 @@ def process_and_save_activations(model, layer_module, dataloader, save_prefix, c
     activation_list = []
     chunk_idx = 0
     hook_handle = layer_module.register_forward_hook(make_hook(activation_list))
-    
+
     for i, batch in enumerate(tqdm(dataloader, desc=f"Processing {save_prefix} Model")):
         inputs = {k: v.to(model.device) for k, v in batch.items() if k in tokenizer.model_input_names}
         _ = model(**inputs)
@@ -53,14 +55,12 @@ def process_and_save_activations(model, layer_module, dataloader, save_prefix, c
             torch.save(torch.cat(activation_list), os.path.join(activations_dir, f"{save_prefix}_activations_layer_{layer_idx}_chunk_{chunk_idx}.pt"))
             activation_list.clear()
             chunk_idx += 1
+
     if activation_list:
         torch.save(torch.cat(activation_list), os.path.join(activations_dir, f"{save_prefix}_activations_layer_{layer_idx}_chunk_{chunk_idx}.pt"))
+
     hook_handle.remove()
 
-# Layer and execution
-layer_idx = 8
-chunk_size = 500
-base_layer = base_model.model.layers[layer_idx]
-finetuned_layer = finetuned_model.model.layers[layer_idx]
-process_and_save_activations(base_model, base_layer, dataloader, "base", chunk_size, layer_idx)
-process_and_save_activations(finetuned_model, finetuned_layer, dataloader, "finetuned", chunk_size, layer_idx)
+chunk_size = 50
+process_and_save_activations(base_model, base_model.model.layers[layer_idx], dataloader, "base", chunk_size, layer_idx)
+process_and_save_activations(finetuned_model, finetuned_model.model.layers[layer_idx], dataloader, "finetuned", chunk_size, layer_idx)

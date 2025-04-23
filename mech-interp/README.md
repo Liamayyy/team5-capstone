@@ -32,6 +32,19 @@ NOTE: If you exit a GPU session and want to pull up the conda enviroment in a ne
 
 ## Install SAE Lens
 ```
-pip3 install sae-lens transformer_lens torch transformers datasets tqdm &&
+pip3 install sae-lens transformer_lens torch transformers datasets tqdm psutil &&
 conda install jupyter -y
+```
+## Single Layer Comparisons
+If you want to compare a specific layer of the base and fine-tuned models, you can run the command below (make sure you are in the `single-layer-analysis` directory). Let's say we want to analyze layer 8 in this case.
+```
+python generate_activations.py --layer 8 \
+  && python generate_sparse_codes.py --layer 8 \
+  && python compare_sparse_codes.py --layer 8 \
+  > layer8.log 2>&1
+```
+
+If you want to run a comparison of each layer of the model, you can run (and change before running) the following bash script:
+```
+bash all_layers.sh
 ```
