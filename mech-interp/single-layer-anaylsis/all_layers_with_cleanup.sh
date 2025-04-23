@@ -1,7 +1,7 @@
 # Create logs directory if it doesn't exist
 mkdir -p ./layer-logs
 
-for LAYER in $(seq 0 4 24); do
+for LAYER in $(seq 8 4 24); do
   LOG="./layer-logs/layer_${LAYER}.log"
   echo "=== Processing Layer $LAYER ===" | tee -a $LOG
 
@@ -25,6 +25,14 @@ for LAYER in $(seq 0 4 24); do
     echo "[✗] Comparison failed" | tee -a $LOG
     continue
   fi
+
+  # Delete all activations for this layer
+  echo "[~] Deleting activations for layer $LAYER..." | tee -a $LOG
+  find activations/ -type f -name "*layer_${LAYER}_chunk_*.pt" -delete
+
+  # Delete all sparse codes for this layer
+  echo "[~] Deleting sparse codes for layer $LAYER..." | tee -a $LOG
+  find sparse_codes/ -type f -name "*layer_${LAYER}_chunk_*.pt" -delete
 
   echo "=== Done with Layer $LAYER ===" | tee -a $LOG
   echo "" >> $LOG

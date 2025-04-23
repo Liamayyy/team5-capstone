@@ -6,6 +6,7 @@ data/medical-fine-tune
 data/original-medical-data
 mech-interp/single-layer-anaylsis/activations
 mech-interp/single-layer-anaylsis/sparse_codes
+mech-interp/single-layer-anaylsis/layer-logs
 mech-interp/multi-layer-anaylsis/activations
 mech-interp/multi-layer-anaylsis/sparse_codes
 

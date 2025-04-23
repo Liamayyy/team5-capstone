@@ -28,7 +28,7 @@ base_model.eval()
 finetuned_model.eval()
 
 # Dataset
-dataset = load_dataset("wikitext", "wikitext-103-v1", split="train[:50]")
+dataset = load_dataset("wikitext", "wikitext-103-v1", split="train[:10000]")
 def tokenize_function(examples):
     return tokenizer(examples["text"], return_tensors="pt", padding="max_length", truncation=True, max_length=512)
 tokenized_dataset = dataset.map(tokenize_function, batched=True)

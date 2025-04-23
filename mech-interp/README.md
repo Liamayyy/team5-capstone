@@ -48,3 +48,7 @@ If you want to run a comparison of each layer of the model, you can run (and cha
 ```
 bash all_layers.sh
 ```
+NOTE: This will not delete old activations and sparse codes after running, which may result in a disk space error. To prevent this, we have made a seperate script that will automatically delete the activations and sparse codes, after logging the measurements between them.
+```
+bash all_layers_with_cleanup.sh
+```
