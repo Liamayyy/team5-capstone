@@ -28,7 +28,7 @@ base_model.eval()
 finetuned_model.eval()
 
 # Dataset
-dataset = load_dataset("wikitext", "wikitext-103-v1", split="train[:10000]")
+dataset = load_dataset("wikitext", "wikitext-103-v1", split="train[:2500]")
 def tokenize_function(examples):
     return tokenizer(examples["text"], return_tensors="pt", padding="max_length", truncation=True, max_length=512)
 tokenized_dataset = dataset.map(tokenize_function, batched=True)
@@ -39,7 +39,7 @@ dataloader = DataLoader(tokenized_dataset, batch_size=8)
 def make_hook(activation_list):
     def hook_fn(module, input, output):
         act = output[0] if isinstance(output, tuple) else output
-        activation_list.append(act.detach().cpu())
+        activation_list.append(act.detach().cpu().to(torch.float16))  # <- downcast to float16
     return hook_fn
 
 def process_and_save_activations(model, layer_module, dataloader, save_prefix, chunk_size, layer_idx):

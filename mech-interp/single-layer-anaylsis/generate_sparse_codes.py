@@ -18,7 +18,11 @@ def encode_in_batches_to_file(sae, activations, out_path_prefix, batch_size=512)
     with torch.no_grad():
         for i in tqdm(range(0, activations.shape[0], batch_size), desc=f"Encoding {out_path_prefix}"):
             batch = activations[i:i+batch_size]
-            codes = sae.encode(batch).to_sparse_coo().cpu()
+
+            # Ensure activations are float16
+            batch = batch.to(torch.float16)
+
+            codes = sae.encode(batch).to(torch.float16).to_sparse_coo().cpu()  # Save sparse codes in float16
             torch.save(codes, f"{out_path_prefix}_part_{i//batch_size}.pt")
             del batch, codes
             torch.cuda.empty_cache()
@@ -40,6 +44,10 @@ for prefix in ["base", "finetuned"]:
             print(f"\nProcessing {filename} ({os.path.getsize(full_path) / 1e9:.2f} GB)")
             try:
                 activations = torch.load(full_path, map_location=device)
+
+                # (optional) Ensure float16 before encoding
+                activations = activations.to(torch.float16)
+
                 out_prefix = os.path.join(sparse_codes_dir, filename.replace("activations", "sparse_codes").replace(".pt", ""))
                 encode_in_batches_to_file(sae, activations, out_prefix, batch_size=4)
                 print(f"Saved sparse codes to prefix: {out_prefix}_part_*.pt")
