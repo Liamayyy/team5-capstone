@@ -1,7 +1,7 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
-# define prompts here
+# define prompts
 prompts = [
     "What are the common symptoms of diabetes?",
     "How is high blood pressure diagnosed and treated?",
@@ -45,9 +45,8 @@ prompts = [
     "What causes low white blood cell count?"
 ]
 
-
-# paths to models
-fine_tuned_path = "/home/liam23/team5-capstone/fine-tuning/fine-tuned-models/axolotl-out-format/full-fine-tuned1"
+# model paths
+fine_tuned_path = "Liamayyy/gemma-2-2b-medical-v2"
 base_model_path = "google/gemma-2-2b"
 
 # load models and tokenizers
@@ -57,16 +56,14 @@ fine_tuned_model = AutoModelForCausalLM.from_pretrained(fine_tuned_path, torch_d
 base_tokenizer = AutoTokenizer.from_pretrained(base_model_path)
 base_model = AutoModelForCausalLM.from_pretrained(base_model_path, torch_dtype=torch.float16, device_map="auto")
 
-# where to save the output
+# output path
 output_file_path = "model_comparison_output.txt"
 
 with open(output_file_path, "w", encoding="utf-8") as f:
     for i, prompt in enumerate(prompts, 1):
-        # tokenize inputs for both models
         ft_inputs = fine_tuned_tokenizer(prompt, return_tensors="pt").to(fine_tuned_model.device)
         base_inputs = base_tokenizer(prompt, return_tensors="pt").to(base_model.device)
 
-        # generate outputs
         with torch.no_grad():
             ft_output = fine_tuned_model.generate(
                 **ft_inputs,
@@ -83,11 +80,9 @@ with open(output_file_path, "w", encoding="utf-8") as f:
                 temperature=0.8
             )
 
-        # decode outputs
         ft_response = fine_tuned_tokenizer.decode(ft_output[0], skip_special_tokens=True)
         base_response = base_tokenizer.decode(base_output[0], skip_special_tokens=True)
 
-        # write to file
         f.write(f"=== Prompt {i} ===\n")
         f.write(f"Prompt: {prompt}\n\n")
         f.write("Fine-tuned Model Response:\n")
