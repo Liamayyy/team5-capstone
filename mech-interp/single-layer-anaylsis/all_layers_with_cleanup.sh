@@ -2,7 +2,7 @@
 # Create logs directory if it doesn't exist
 mkdir -p ./layer-logs
 
-for LAYER in $(seq 16 4 24); do
+for LAYER in $(seq 0 1 24); do
   LOG="./layer-logs/layer_${LAYER}.log"
   echo "=== Processing Layer $LAYER ===" | tee "$LOG"
 

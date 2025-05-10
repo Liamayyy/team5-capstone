@@ -11,8 +11,6 @@ source ~/.bashrc &&
 module load Miniconda3 &&
 conda create -n mech-interp python=3.11 &&
 source activate mech-interp &&
-conda install ipykernel jupyter &&
-python -m ipykernel install --user --name=mech-interp --display-name "Mechanistic Interpratability Enviroment (mech-interp)"
 ```
 
 # Cluster Node Installation Requirements
@@ -32,8 +30,7 @@ NOTE: If you exit a GPU session and want to pull up the conda enviroment in a ne
 
 ## Install SAE Lens
 ```
-pip3 install sae-lens transformer_lens torch transformers datasets tqdm psutil &&
-conda install jupyter -y
+pip3 install sae-lens transformer_lens torch transformers datasets tqdm psutil
 ```
 ## Single Layer Comparisons
 If you want to compare a specific layer of the base and fine-tuned models, you can run the command below (make sure you are in the `single-layer-analysis` directory). Let's say we want to analyze layer 8 in this case.

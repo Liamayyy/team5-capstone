@@ -12,14 +12,22 @@ def print_ram_usage():
     print(f"[Memory] Current RAM usage: {ram:.2f} GB")
 
 def print_metric(name, values, higher_better=True):
+    # Concatenate and drop NaNs
     cat = torch.cat(values).float()
-    avg, std = cat.mean().item(), cat.std().item()
+    cat = cat[~torch.isnan(cat)]
+    if cat.numel() == 0:
+        print(f"{name}: no valid entries")
+        return
+    avg = cat.mean().item()
+    std = cat.std().item()
     better = "higher" if higher_better else "lower"
     print(f"{name}: {avg:.4f} ± {std:.4f} ({better} is better)")
 
 def streamed_similarity_metrics(base_prefix, finetuned_prefix, layer_idx):
-    base_parts = sorted(glob.glob(f"sparse_codes/{base_prefix}_sparse_codes_layer_{layer_idx}_chunk_0_part_*.pt"))
-    finetuned_parts = sorted(glob.glob(f"sparse_codes/{finetuned_prefix}_sparse_codes_layer_{layer_idx}_chunk_0_part_*.pt"))
+    base_parts = sorted(glob.glob(
+        f"sparse_codes/{base_prefix}_sparse_codes_layer_{layer_idx}_chunk_0_part_*.pt"))
+    finetuned_parts = sorted(glob.glob(
+        f"sparse_codes/{finetuned_prefix}_sparse_codes_layer_{layer_idx}_chunk_0_part_*.pt"))
 
     if len(base_parts) != len(finetuned_parts):
         raise ValueError("Mismatch in number of part files between base and finetuned.")
@@ -28,35 +36,43 @@ def streamed_similarity_metrics(base_prefix, finetuned_prefix, layer_idx):
     activation_counts_base, activation_counts_fine = [], []
     base_neuron_usage, fine_neuron_usage = set(), set()
 
-    # Streaming stats
-    dist_stats_base = {"sum": 0, "sumsq": 0, "nonzero": 0, "count": 0, "entropy_sum": 0, "entropy_count": 0}
-    dist_stats_fine = {"sum": 0, "sumsq": 0, "nonzero": 0, "count": 0, "entropy_sum": 0, "entropy_count": 0}
+    # Streaming stats initialization
+    dist_stats_base = {"sum": 0.0, "sumsq": 0.0, "nonzero": 0, "count": 0,
+                       "entropy_sum": 0.0, "entropy_count": 0}
+    dist_stats_fine = {"sum": 0.0, "sumsq": 0.0, "nonzero": 0, "count": 0,
+                       "entropy_sum": 0.0, "entropy_count": 0}
 
     for b_path, f_path in tqdm(list(zip(base_parts, finetuned_parts)), desc="Comparing parts"):
         base = torch.load(b_path).to_dense()
         fine = torch.load(f_path).to_dense()
 
+        # Replace NaNs and Infs
+        base = torch.nan_to_num(base, nan=0.0, posinf=0.0, neginf=0.0)
+        fine = torch.nan_to_num(fine, nan=0.0, posinf=0.0, neginf=0.0)
+
         min_len = min(base.shape[0], fine.shape[0])
         base = base[:min_len]
         fine = fine[:min_len]
 
-        # Cosine
-        cos_sims.append(cosine_similarity(base, fine, dim=1).cpu())
+        # Cosine similarity, mask invalid
+        cos = cosine_similarity(base, fine, dim=1).cpu()
+        cos[torch.isnan(cos)] = 0.0
+        cos_sims.append(cos)
 
-        # L1
-        l1 = torch.sum(torch.abs(base - fine), dim=1)
-        l1_dists.append(l1.cpu())
+        # L1 distance
+        l1 = torch.sum(torch.abs(base - fine), dim=1).cpu()
+        l1_dists.append(l1)
 
-        # Binarize
+        # Binarize for set metrics
         base_bin = (base != 0).int()
         fine_bin = (fine != 0).int()
 
-        # Jaccard
+        # Jaccard similarity
         inter = torch.sum((base_bin & fine_bin), dim=1).float()
         union = torch.sum((base_bin | fine_bin), dim=1).float() + 1e-8
         jacc_sims.append((inter / union).cpu())
 
-        # Hamming
+        # Hamming distance
         hamm_dists.append(torch.sum(base_bin != fine_bin, dim=1).float().cpu())
 
         # Activation counts
@@ -69,22 +85,22 @@ def streamed_similarity_metrics(base_prefix, finetuned_prefix, layer_idx):
         for row in fine_bin:
             fine_neuron_usage.update(torch.nonzero(row).flatten().tolist())
 
-        # Streaming stats
+        # Streaming distributional stats
         for tensor, stats in [(base, dist_stats_base), (fine, dist_stats_fine)]:
-            stats["sum"] += tensor.sum().item()
-            stats["sumsq"] += (tensor ** 2).sum().item()
-            stats["nonzero"] += (tensor != 0).sum().item()
-            stats["count"] += tensor.numel()
+            dt = tensor.double()
+            stats["sum"] += float(dt.sum().item())
+            stats["sumsq"] += float((dt ** 2).sum().item())
+            stats["nonzero"] += int((dt != 0).sum().item())
+            stats["count"] += int(dt.numel())
 
-            # Streaming entropy (row-wise average)
-            probs = torch.abs(tensor) + 1e-8
+            # Entropy per vector
+            probs = torch.abs(dt) + 1e-8
             probs = probs / probs.sum(dim=1, keepdim=True)
-            row_entropies = -torch.sum(probs * probs.log2(), dim=1)
-            stats["entropy_sum"] += row_entropies.sum().item()
-            stats["entropy_count"] += row_entropies.numel()
+            row_entropies = -torch.sum(probs * torch.log2(probs), dim=1)
+            stats["entropy_sum"] += float(row_entropies.sum().item())
+            stats["entropy_count"] += int(row_entropies.numel())
 
         print_ram_usage()
-
         del base, fine, base_bin, fine_bin
         torch.cuda.empty_cache()
 
@@ -105,12 +121,14 @@ def streamed_similarity_metrics(base_prefix, finetuned_prefix, layer_idx):
     print(f"Jaccard Index of Neuron Usage: {len(shared) / len(base_neuron_usage | fine_neuron_usage):.4f}")
 
     print("\n=== Distributional Stats (Streaming) ===")
-
     def summarize(label, stats):
         total = stats["count"]
-        mean = stats["sum"] / total
-        std = (stats["sumsq"] / total - mean**2) ** 0.5
-        sparsity = stats["nonzero"] / total
+        mean = stats["sum"] / total if total else 0.0
+        var = stats["sumsq"] / total - mean ** 2 if total else 0.0
+        if var < 0.0:
+            var = 0.0
+        std = var ** 0.5
+        sparsity = stats["nonzero"] / total if total else 0.0
         print(f"\n{label}:")
         print(f"  Mean: {mean:.4f}")
         print(f"  Std: {std:.4f}")
@@ -124,7 +142,8 @@ def streamed_similarity_metrics(base_prefix, finetuned_prefix, layer_idx):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--layer", type=int, required=True, help="Layer index for sparse code comparison.")
+    parser.add_argument("--layer", type=int, required=True,
+                        help="Layer index for sparse code comparison.")
     args = parser.parse_args()
 
     print("Comparing sparse codes using streaming statistics and similarity metrics...")
